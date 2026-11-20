@@ -1,0 +1,62 @@
+name: Spring Boot CI/CD & Security Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  security-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. Setup Java & Build Application Jar
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven' # Change to 'gradle' if using Gradle
+
+      - name: Package Spring Boot App
+        run: mvn -B package -DskipTests # Use ./gradlew bootJar for Gradle
+
+      # 2. Build Container Image
+      - name: Build Docker Image
+        run: docker build -t spring-service:${{ github.sha }} .
+
+      # 3. Checkout Agent Code Base
+      - name: Checkout CVE Identification Agent
+        uses: actions/checkout@v4
+        with:
+          repository: djmbrady/cve-identification-agent
+          path: agent-repo
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: agent-repo/requirements.txt
+
+      - name: Install Agent Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r agent-repo/requirements.txt
+
+      # 4. Run Source Identification Agent (pom.xml / build.gradle)
+      - name: Run Source CVE Identification Agent
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python agent-repo/cve_identifier.py
+
+      # 5. Run Local Docker Image Identification Agent (Container Layers)
+      - name: Run Docker Image Identification Agent
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          IMAGE_TAG: spring-service:${{ github.sha }}
+        run: python agent-repo/docker_image_identifier.py
