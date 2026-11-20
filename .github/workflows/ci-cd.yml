@@ -57,7 +57,7 @@ jobs:
         run: python agent-repo/cve_identifier.py
 
       - name: Install Trivy
-        uses: aquasecurity/setup-trivy@v0.2.3
+        uses: aquasecurity/setup-trivy@v0.3.1
 
       - name: Verify Trivy
         run: trivy --version
