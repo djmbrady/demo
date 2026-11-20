@@ -53,11 +53,13 @@ jobs:
       - name: Run Source CVE Identification Agent
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python agent-repo/cve_identifier.py
 
       # 5. Run Local Docker Image Identification Agent (Container Layers)
       - name: Run Docker Image Identification Agent
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           IMAGE_TAG: spring-service:${{ github.sha }}
         run: python agent-repo/docker_image_identifier.py
