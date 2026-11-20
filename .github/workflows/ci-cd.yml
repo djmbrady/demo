@@ -15,11 +15,11 @@ jobs:
         uses: actions/checkout@v4
 
       # 1. Setup Java & Build Application Jar
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
           cache: 'maven' # Change to 'gradle' if using Gradle
 
       - name: Package Spring Boot App
