@@ -56,6 +56,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python agent-repo/cve_identifier.py
 
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.2.3
+
+      - name: Verify Trivy
+        run: trivy --version
+
       # 5. Run Local Docker Image Identification Agent (Container Layers)
       - name: Run Docker Image Identification Agent
         env:
